@@ -1,0 +1,17 @@
+micronaut:
+    application:
+        name: micronaut-gorm
+    server:
+        port: 9090
+dataSource:
+    dbCreate: update
+    pooled: true
+    url: jdbc:postgresql://localhost:5432/postgres
+    driverClassName: org.postgresql.Driver
+    username: postgres
+    password: root
+    dialect: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+        jmxEnabled: true
+        initialSize: 5
+
