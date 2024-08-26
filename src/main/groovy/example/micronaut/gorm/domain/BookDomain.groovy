@@ -20,7 +20,7 @@ class BookDomain{
     Many-One (Many Books contains one Author)*/
     @JsonIgnore
     static constraints={
-        title unique:true,blank:false,nullanle:false
+        title unique:true,blank:false,nullable:false
     }
 
 }

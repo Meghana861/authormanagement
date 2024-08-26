@@ -1,6 +1,7 @@
 package example.micronaut.gorm.controller
 
 import example.micronaut.gorm.domain.AuthorDomain
+import example.micronaut.gorm.handlers.AuthorSavedException
 import example.micronaut.gorm.model.AuthorModel
 import example.micronaut.gorm.model.BookModel
 import example.micronaut.gorm.service.AuthorService
@@ -22,7 +23,8 @@ class AuthorController {
     AuthorService authorService
     @Post("/create")
     def createAuthors(@Body AuthorModel authorModel){
-        return authorService.createAuthor(authorModel)
+            return authorService.createAuthor(authorModel)
+
     }
 
     @Delete("/{id}")
@@ -57,4 +59,8 @@ class AuthorController {
         return("deleted successfully ${id}")
     }
 
+    @Get("/getbooks/{id}")
+    def getBooksById(@PathVariable Long id){
+        authorService.getBookById(id)
+    }
 }

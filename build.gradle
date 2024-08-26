@@ -21,6 +21,7 @@ dependencyManagement {
 }
 
 dependencies {
+
     compile "io.micronaut:micronaut-runtime-groovy"
     compile "io.micronaut:micronaut-validation"
     compile "io.micronaut:micronaut-http-client"

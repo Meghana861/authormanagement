@@ -2,7 +2,7 @@ package example.micronaut.gorm.service
 
 import example.micronaut.gorm.domain.AuthorDomain
 import example.micronaut.gorm.domain.BookDomain
-
+import example.micronaut.gorm.handlers.BookNotFoundException
 import example.micronaut.gorm.model.AuthorModel
 import example.micronaut.gorm.model.BookModel
 import grails.gorm.transactions.Transactional
@@ -22,21 +22,39 @@ class AuthorService {
     def createAuthor(AuthorModel authorModel){
                 // Started with authormodel because this is the object received from a client
                 //AuthorDomain authorDomain=AuthorDomain.findByName(authorModel.name) //find by the given name in request so authormodel is used
-                AuthorDomain authorDomain = new AuthorDomain()
+               AuthorDomain existingAuthor=AuthorDomain.findByName(authorModel.name)
+               if(existingAuthor) {
+                   authorModel.books.each { bookModel ->
+                       BookDomain existingBook = BookDomain.findByTitleAndAuthor(bookModel.title, existingAuthor)
+                       if (!existingBook) {
+                           BookDomain bookDomain = new BookDomain()
+                           bookDomain.title = bookModel.title
+                           bookDomain.price = bookModel.price
+                           bookDomain.publishedDate = bookModel.publishedDate
+                           bookDomain.author = existingAuthor
+                           bookDomain.save()
+                       } else {
+                           println("Book Already Exists")
+                       }
+                   }
+                    return "Books added to existing author successfully"
+                }
+                else{
+                    AuthorDomain authorDomain = new AuthorDomain()
                 //convert the AuthorModel into an AuthorDomain because you need to persist(continue to exist) the data to the database.
                 authorDomain.name = authorModel.name//Model to Domain
                 authorDomain.penName = authorModel.penName
                 authorDomain.age = authorModel.age
                 authorDomain.save()
                 authorDomain.books = new HashSet<>()//books used in authorDomain while establishing one-many
-                authorModel.books.each{
-                BookDomain bookDomain=new BookDomain()
-                bookDomain.title = it.title
-                bookDomain.price = it.price
-                bookDomain.publishedDate = it.publishedDate
-                //bookDomain.author=authorDomain
-                authorDomain.addToBooks(bookDomain)
-
+                authorModel.books.each {
+                    BookDomain bookDomain = new BookDomain()
+                    bookDomain.title = it.title
+                    bookDomain.price = it.price
+                    bookDomain.publishedDate = it.publishedDate
+                    //bookDomain.author=authorDomain
+                    authorDomain.addToBooks(bookDomain)
+                }
             bookDomain.save()
             authorDomain.save()
         }
@@ -125,6 +143,27 @@ class AuthorService {
         /*removeFromBooks method has relationship to allow removing a specific BookDomain instance from the books
         this helps in taking out bookDomain from the authorDomain with the instance of author*/
         bookDomain.delete()
+    }
+
+    /*Get Books Details By Id*/
+    @Transactional
+    def getBookById(Long id){
+        BookDomain bookDomain=BookDomain.findById(id)
+        if(bookDomain){
+            BookModel bookModel = new BookModel()
+            bookModel.title = bookDomain.title
+            bookModel.price=bookDomain.price
+            bookModel.publishedDate=bookDomain.publishedDate
+            // Instantiate the AuthorModel and set its properties
+            AuthorModel authorModel = new AuthorModel()
+            authorModel.name = bookDomain.author.name
+            authorModel.age = bookDomain.author.age
+            // Set the authorModel in bookModel
+            bookModel.author = authorModel
+            return bookModel
+
+        }
+        throw new BookNotFoundException("Book with Id $id is not found")
     }
 
   
