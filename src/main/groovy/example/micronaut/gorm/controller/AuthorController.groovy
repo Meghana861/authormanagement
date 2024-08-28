@@ -1,7 +1,6 @@
 package example.micronaut.gorm.controller
 
-import example.micronaut.gorm.domain.AuthorDomain
-import example.micronaut.gorm.handlers.AuthorSavedException
+
 import example.micronaut.gorm.model.AuthorModel
 import example.micronaut.gorm.model.BookModel
 import example.micronaut.gorm.service.AuthorService
@@ -13,7 +12,6 @@ import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.PathVariable
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.Put
-import org.codehaus.groovy.ast.tools.ParameterUtils
 
 import javax.inject.Inject
 
@@ -62,5 +60,10 @@ class AuthorController {
     @Get("/getbooks/{id}")
     def getBooksById(@PathVariable Long id){
         authorService.getBookById(id)
+    }
+
+    @Get("/getauthors/{id}")
+    def getAuthorsById(@PathVariable Long id){
+        authorService.getAuthorById(id)
     }
 }

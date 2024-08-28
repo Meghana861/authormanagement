@@ -2,6 +2,7 @@ package example.micronaut.gorm.service
 
 import example.micronaut.gorm.domain.AuthorDomain
 import example.micronaut.gorm.domain.BookDomain
+import example.micronaut.gorm.handlers.AuthorNotFoundException
 import example.micronaut.gorm.handlers.BookNotFoundException
 import example.micronaut.gorm.model.AuthorModel
 import example.micronaut.gorm.model.BookModel
@@ -15,7 +16,7 @@ import javax.inject.Singleton
 class AuthorService {
     @Inject
     SessionFactory sessionFactory
-    def anabooks = "SELECT * FROM book_domain WHERE price = :price"
+    def anabooks = "SELECT * FROM book_domain WHERE price >= :price"
 
     /*Saving an Author*/
     @Transactional
@@ -79,7 +80,8 @@ class AuthorService {
     @Transactional
      List<AuthorModel> getAllAuthors() {
         List<AuthorDomain> authorDomains = AuthorDomain.list() //AuthorDomain.list() is equal to SELECT * FROM author_domain
-        return authorDomains.collect {
+        return authorDomains.collect { //collects each instance as a collection and returns it as a new collection
+            //The collect method is used to transform each AuthorDomain into an AuthorModel and return a new list of AuthorModel
             AuthorModel authorModel=new AuthorModel()
             authorModel.id=it.id
             authorModel.name= it.name
@@ -95,6 +97,7 @@ class AuthorService {
                     }
       return authorModel
         }
+
     }
 
     /*update By AuthorId*/
@@ -166,7 +169,31 @@ class AuthorService {
         throw new BookNotFoundException("Book with Id $id is not found")
     }
 
-  
+    /*Get Author By Id*/
+    @Transactional
+    def getAuthorById(Long id){
+        AuthorDomain authorDomain=AuthorDomain.findById(id)
+        if(authorDomain){
+            AuthorModel authorModel=new AuthorModel()
+            authorModel.name=authorDomain.name
+            authorModel.penName=authorDomain.penName
+            authorModel.age=authorDomain.age
+          authorModel.books=authorDomain.books.collect { bookDomain ->
+               BookModel bookModel = new BookModel(
+               id:bookDomain.id,
+               title :bookDomain.title,
+               price : bookDomain.price,
+               publishedDate : bookDomain.publishedDate
+               )
+
+           }
+            return authorModel
+        }
+ throw new AuthorNotFoundException("Author with id ${id} not found")
+    }
+
+
+
 }
 
 
