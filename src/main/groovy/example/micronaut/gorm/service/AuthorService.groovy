@@ -32,7 +32,6 @@ class AuthorService {
                            bookDomain.title = bookModel.title
                            bookDomain.price = bookModel.price
                            bookDomain.publishedDate = bookModel.publishedDate
-                           bookDomain.author = existingAuthor
                            bookDomain.save()
                        } else {
                            println("Book Already Exists")
@@ -47,16 +46,13 @@ class AuthorService {
                 authorDomain.penName = authorModel.penName
                 authorDomain.age = authorModel.age
                 authorDomain.save()
-                authorDomain.books = new HashSet<>()//books used in authorDomain while establishing one-many
                 authorModel.books.each {
                     BookDomain bookDomain = new BookDomain()
                     bookDomain.title = it.title
                     bookDomain.price = it.price
                     bookDomain.publishedDate = it.publishedDate
-                    //bookDomain.author=authorDomain
                     authorDomain.addToBooks(bookDomain)
                 }
-            bookDomain.save()
             authorDomain.save()
         }
 
@@ -78,49 +74,44 @@ class AuthorService {
 
     /*Get All Authors By Books*/
     @Transactional
-     List<AuthorModel> getAllAuthors() {
-        List<AuthorDomain> authorDomains = AuthorDomain.list() //AuthorDomain.list() is equal to SELECT * FROM author_domain
-        return authorDomains.collect { //collects each instance as a collection and returns it as a new collection
-            //The collect method is used to transform each AuthorDomain into an AuthorModel and return a new list of AuthorModel
-            AuthorModel authorModel=new AuthorModel()
-            authorModel.id=it.id
-            authorModel.name= it.name
-            authorModel.penName= it.penName
-            authorModel.age= it.age
-                    authorModel.books= it.books.collect { bookDomain ->
-                        new BookModel(
-                                id:bookDomain.id,
-                                title: bookDomain.title,
-                                price: bookDomain.price,
-                                publishedDate: bookDomain.publishedDate
-                        )
-                    }
-      return authorModel
+    def getAllAuthors(){
+        List<AuthorDomain> authorDomainList=AuthorDomain.list()
+        return authorDomainList.collect{ authorDomain ->
+            AuthorModel authorModel = new AuthorModel()
+            authorModel.name = authorDomain.name
+            authorModel.penName = authorDomain.penName
+            authorModel.age = authorDomain.age
+            authorModel.books = authorDomain.books.collect {bookDomain->
+                new BookModel(
+                        id:bookDomain.id,
+                        title: bookDomain.title,
+                        price: bookDomain.price,
+                        publishedDate: bookDomain.publishedDate
+                )
+
+            }
+            return authorModel
         }
 
     }
 
     /*update By AuthorId*/
     @Transactional
-    def updateAuthor(Long id,AuthorModel updatedAuthorModel){
-        AuthorDomain authorDomain=AuthorDomain.findById(id)
-        authorDomain.name=updatedAuthorModel.name
-        authorDomain.penName=updatedAuthorModel.penName
-        authorDomain.age=updatedAuthorModel.age
+    def updateAuthor(Long id,AuthorModel updateAuthorModel){
+        AuthorDomain authorDomain=new AuthorDomain()
+        authorDomain.name=updateAuthorModel.name
+        authorDomain.penName=updateAuthorModel.penName
+        authorDomain.age=updateAuthorModel.age
         authorDomain.save()
-        updatedAuthorModel.books.each{
+        updateAuthorModel.books.each{bookModel->
             BookDomain bookDomain=new BookDomain()
-            bookDomain.title=it.title
-            bookDomain.price=it.price
-            bookDomain.publishedDate=it.publishedDate
-         bookDomain.author=authorDomain
-         authorDomain.addToBooks(bookDomain)
+            bookDomain.title=bookModel.title
+            bookDomain.price=bookModel.price
+            bookDomain.publishedDate=bookModel.publishedDate
             bookDomain.save()
         }
-        authorDomain.save()
-        return updatedAuthorModel
+        return updateAuthorModel
     }
-
     /*Custom Query */
     @Transactional
     def getAnaBooks() {
